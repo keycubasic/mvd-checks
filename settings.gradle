@@ -1,0 +1,12 @@
+pluginManagement {
+    repositories {
+        mavenCentral()
+        gradlePluginPortal()
+        mavenLocal()
+    }
+    plugins {
+        id "${quarkusPluginId}" version "${quarkusPluginVersion}"
+        id 'com.github.sherter.google-java-format' version "${googleJavaFormatPluginVersion}"
+    }
+}
+rootProject.name = 'mvd-checks'
