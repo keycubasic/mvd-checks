@@ -172,6 +172,7 @@ public class PassportService {
                 if (fileNameList.size() > 0) {
                     file = new File(splitPath + File.separator + fileNameList.get(0));
                 } else {
+                    log.info("no files to bind");
                     return date.toLocalDate();
                 }
             }
@@ -201,7 +202,7 @@ public class PassportService {
             reader.close();
             if (!test) {
                 boolean deleted = file.delete();
-                log.info("File \"" + fileName + (deleted ? " " : " not") + "\" deleted");
+                log.info("file \"" + fileName + (deleted ? " " : " not") + "\" deleted");
             }
             log.info("bind finished");
             return date.toLocalDate();
@@ -226,7 +227,7 @@ public class PassportService {
                                         .matching(number))
                 ).fetchSingleHit().isPresent();
         long finish = System.currentTimeMillis();
-        log.info("checkByElasticIndex duration: " + (finish - start));
+        log.info("checkByElastic duration: " + (finish - start));
         return present;
     }
 
@@ -238,7 +239,7 @@ public class PassportService {
                 .setParameter("number", number)
                 .getSingleResult() > 0;
         long finish = System.currentTimeMillis();
-        log.info("checkByPostgresIndex duration: " + (finish - start));
+        log.info("checkByPostgres duration: " + (finish - start));
         return present;
     }
 
