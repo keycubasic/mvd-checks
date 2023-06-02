@@ -12,8 +12,6 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.keycube.checkpassport.model.Passport;
 import org.keycube.checkpassport.service.PassportService;
 
-import java.time.LocalDateTime;
-
 @Path("expired")
 public class PassportResource {
 
@@ -37,44 +35,34 @@ public class PassportResource {
     }
 
     @GET
-    @Path("persist-new")
+    @Path("split")
     @Operation(hidden = true)
-    public Response persistNew() {
-        service.persist(false, true);
+    public Response split() {
+        service.split();
         return Response.ok().build();
     }
 
     @GET
-    @Path("persist-all")
+    @Path("persist")
     @Operation(hidden = true)
-    public Response persistAll() {
-        LocalDateTime date = service.persist(false, false);
-        Passport.deleteBeforeDate(date);
+    public Response persist() {
+        service.persist(false);
         return Response.ok().build();
     }
 
     @GET
-    @Path("persist-test-new")
+    @Path("persist-test")
     @Operation(hidden = true)
-    public Response persistTestNew() {
-        service.persist(true, true);
+    public Response persistTest() {
+        service.persist(true);
         return Response.ok().build();
     }
 
     @GET
-    @Path("persist-test-all")
-    @Operation(hidden = true)
-    public Response persistTestAll() {
-        LocalDateTime date = service.persist(true, false);
-        Passport.deleteBeforeDate(date);
-        return Response.ok().build();
-    }
-
-    @GET
-    @Path("check")
+    @Path("check-by-hibernate")
     @Operation(
-            summary = "Проверить паспорт",
-            description = "Укажите данные паспорта"
+            summary = "Проверить паспорт (hibernate)",
+            description = "Поиск посредством HQL"
     )
     @APIResponses(
             value = {
@@ -88,12 +76,70 @@ public class PassportResource {
                     )
             }
     )
-    public Response check(@Parameter(description = "Серия паспорта", required = true)
-                              @QueryParam("serial") String serial,
-                          @Parameter(description = "Номер паспорта", required = true)
-                              @QueryParam("number") String number) {
+    public Response checkByHibernate(@Parameter(description = "Серия паспорта", required = true)
+                                     @QueryParam("serial") String serial,
+                                     @Parameter(description = "Номер паспорта", required = true)
+                                     @QueryParam("number") String number) {
         Response.Status status = Response.Status.NOT_FOUND;
-        if (Passport.checkExpired(serial.trim(), number.trim())) {
+        if (Passport.checkByHibernate(serial.trim(), number.trim())) {
+            status = Response.Status.FOUND;
+        }
+        return Response.status(status).build();
+    }
+
+    @GET
+    @Path("check-by-postgres")
+    @Operation(
+            summary = "Проверить паспорт (postgres)",
+            description = "Полнотекстовый поиск посредством postgres (native)"
+    )
+    @APIResponses(
+            value = {
+                    @APIResponse(
+                            responseCode = "404",
+                            description = "Паспорт не найден в списке недействительных российских паспортов"
+                    ),
+                    @APIResponse(
+                            responseCode = "302",
+                            description = "Паспорт найден в списке недействительных российских паспортов"
+                    )
+            }
+    )
+    public Response checkByPostgres(@Parameter(description = "Серия паспорта", required = true)
+                                    @QueryParam("serial") String serial,
+                                    @Parameter(description = "Номер паспорта", required = true)
+                                    @QueryParam("number") String number) {
+        Response.Status status = Response.Status.NOT_FOUND;
+        if (service.checkByPostgres(serial.trim(), number.trim())) {
+            status = Response.Status.FOUND;
+        }
+        return Response.status(status).build();
+    }
+
+    @GET
+    @Path("check-by-elastic")
+    @Operation(
+            summary = "Проверить паспорт (elastic)",
+            description = "Поиск посредством Hibernate + Elasticsearch"
+    )
+    @APIResponses(
+            value = {
+                    @APIResponse(
+                            responseCode = "404",
+                            description = "Паспорт не найден в списке недействительных российских паспортов"
+                    ),
+                    @APIResponse(
+                            responseCode = "302",
+                            description = "Паспорт найден в списке недействительных российских паспортов"
+                    )
+            }
+    )
+    public Response checkByElastic(@Parameter(description = "Серия паспорта", required = true)
+                                   @QueryParam("serial") String serial,
+                                   @Parameter(description = "Номер паспорта", required = true)
+                                   @QueryParam("number") String number) {
+        Response.Status status = Response.Status.NOT_FOUND;
+        if (service.checkByElastic(serial.trim(), number.trim())) {
             status = Response.Status.FOUND;
         }
         return Response.status(status).build();

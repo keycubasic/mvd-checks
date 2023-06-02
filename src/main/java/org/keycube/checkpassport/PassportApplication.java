@@ -9,14 +9,14 @@ import org.eclipse.microprofile.openapi.annotations.info.Info;
 @ApplicationPath("check-passport")
 @OpenAPIDefinition(
         info = @Info(
-                title = "Check expired passport", 
-                description = "Проверка по списку недействительных российских паспортов", 
-                version = "1.0.0", 
+                title = "Check expired passport",
+                description = "Проверка по списку недействительных российских паспортов",
+                version = "1.0.0",
                 contact = @Contact(
-                        name = "Константинов Константин Константинович", 
+                        name = "Константинов Константин Константинович",
                         email = "keycube@mail.ru"
-                        )
                 )
         )
+)
 public class PassportApplication extends Application {
 }

@@ -7,7 +7,7 @@ import org.jboss.logging.Logger;
 import org.keycube.checkpassport.model.Passport;
 import org.keycube.checkpassport.service.PassportService;
 
-import java.time.LocalDateTime;
+import java.time.LocalDate;
 
 @Singleton
 public class PassportScheduler {
@@ -18,41 +18,35 @@ public class PassportScheduler {
     @Inject
     PassportService service;
 
-    @Scheduled(cron = "{append.cron.expr}")
-    void append() throws InterruptedException {
-        log.info("append scheduled");
+    @Scheduled(cron = "{reload.cron.expr}")
+    void reload() {
+        log.info("reload scheduled");
         service.download();
-        Thread.sleep(10000);
         service.decompress();
-        Thread.sleep(10000);
-        service.persist(false, true);
-        log.info("append scheduler finished");
+        service.split();
+        log.info("reload scheduler finished");
     }
 
-    @Scheduled(cron = "{refresh.cron.expr}")
-    void refresh() throws InterruptedException {
-        log.info("refresh scheduled");
-        service.download();
-        Thread.sleep(10000);
-        service.decompress();
-        Thread.sleep(10000);
-        LocalDateTime date = service.persist(false, false);
+    @Scheduled(cron = "{persist.cron.expr}")
+    void persist() {
+        log.info("persist scheduled");
+        service.persist(false);
+        log.info("persist scheduler finished");
+    }
+
+    @Scheduled(cron = "{delete.cron.expr}")
+    void delete() {
+        log.info("persist scheduled");
+        LocalDate date = LocalDate.now();
         Passport.deleteBeforeDate(date);
-        log.info("refresh scheduler finished");
+        log.info("persist scheduler finished");
     }
 
-    @Scheduled(cron = "{persistTestNew.cron.expr}")
-    void persistTestNew() {
-        log.info("persistTestNew scheduled");
-        service.persist(true, true);
-        log.info("persistTestNew scheduler finished");
-    }
-
-    @Scheduled(cron = "{persistTestAll.cron.expr}")
-    void persistTestAll() {
-        log.info("persistTestAll scheduled");
-        LocalDateTime date = service.persist(true, false);
+    @Scheduled(cron = "{persistTest.cron.expr}")
+    void persistTest() {
+        log.info("persistTest scheduled");
+        LocalDate date = service.persist(true);
         Passport.deleteBeforeDate(date);
-        log.info("persistTestAll scheduler finished");
+        log.info("persistTest scheduler finished");
     }
 }
