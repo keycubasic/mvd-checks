@@ -6,6 +6,13 @@ This project uses Quarkus, the Supersonic Subatomic Java Framework.
 
 If you want to learn more about Quarkus, please visit its website: https://quarkus.io/ .
 
+An elasticsearch image is required to use the Dev Services
+
+```shell script
+docker pull elasticsearch:7.17.10
+```
+Configure the datastore, datasource and robot schedule in _application.properties_
+
 ## Running the application in dev mode
 
 You can run your application in dev mode that enables live coding using:
